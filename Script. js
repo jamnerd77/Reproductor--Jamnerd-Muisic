@@ -1,0 +1,67 @@
+const audio = new Audio();
+const playBtn = document.getElementById('play-pause');
+const playIcon = document.getElementById('play-icon');
+const progressBar = document.getElementById('progress-bar');
+const disk = document.getElementById('disk');
+const titleDisplay = document.getElementById('title');
+const playlistElement = document.getElementById('playlist-list');
+
+let isPlaying = false;
+let currentSongIndex = parseInt(localStorage.getItem('lastSongIndex')) || 0;
+
+const misBeats = [
+    { title: "Drill Latino", file: "beat1.mp3" },
+    { title: "Hip Hop Soul", file: "beat2.mp3" }
+];
+
+function loadPlaylist() {
+    playlistElement.innerHTML = "";
+    misBeats.forEach((beat, index) => {
+        const li = document.createElement('li');
+        li.className = `song-item ${index === currentSongIndex ? 'active' : ''}`;
+        li.innerText = beat.title;
+        li.onclick = () => selectSong(index);
+        playlistElement.appendChild(li);
+    });
+}
+
+function selectSong(index) {
+    currentSongIndex = index;
+    audio.src = misBeats[currentSongIndex].file;
+    titleDisplay.innerText = misBeats[currentSongIndex].title;
+    localStorage.setItem('lastSongIndex', index);
+    loadPlaylist();
+    if(isPlaying) audio.play();
+}
+
+function playAudio(id) {
+    const s = document.getElementById(`sound-${id}`);
+    if(s) { s.currentTime = 0; s.play(); }
+}
+
+playBtn.addEventListener('click', () => {
+    if (isPlaying) {
+        audio.pause();
+        playIcon.innerText = 'play_arrow';
+        disk.style.animationPlayState = 'paused';
+    } else {
+        if(!audio.src) selectSong(currentSongIndex);
+        audio.play();
+        playIcon.innerText = 'pause';
+        disk.style.animationPlayState = 'running';
+    }
+    isPlaying = !isPlaying;
+});
+
+audio.addEventListener('timeupdate', () => {
+    progressBar.style.width = (audio.currentTime / audio.duration) * 100 + '%';
+});
+
+// Compartir WhatsApp
+document.getElementById('share-whatsapp').onclick = () => {
+    const text = encodeURIComponent("¡Escucha mi producción en Jamnerd Studio!");
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+};
+
+loadPlaylist();
+selectSong(currentSongIndex);
